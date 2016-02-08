@@ -32,6 +32,11 @@ from ``unicode`` to picklable objects. If this store is persistent,
 metadata might be retained across process lifetimes (depends
 on other requirements as well).
 """
+
+# timeout used in ``EntityByUrl.get_metadata_document``
+ENTITY_BY_URL_TIMEOUT = 10 # seconds
+
+
 from logging import getLogger
 from datetime import timedelta
 from urllib2 import urlopen
@@ -111,7 +116,7 @@ class EntityByUrl(EntityBase):
     self.url = url
 
   def get_metadata_document(self):
-    return urlopen(self.url).read()
+    return urlopen(self.url, timeout=ENTITY_BY_URL_TIMEOUT).read()
 
 
 

@@ -178,6 +178,16 @@ initialized. Do not forget to call ``dm.xmlsec.binding.initialize()``.
 History
 =======
 
+3.1.3
+
+  Added a 10 s timeout in ``metadata.EntityByUrl.get_metadata_document``.
+  It can be changed by changing the variable ``ENTITY_BY_URL_TIMEOUT``
+  in module ``metadata``.
+
+3.1.2
+
+  Support (limited) type conversion in ``util.xs_convert_from_xml``.
+
 3.1.1
 
   Adapt to the changed binding for "plural" elements (``maxoccurs`` > 1)

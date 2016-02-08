@@ -202,7 +202,7 @@ def xs_convert_to_xml(ty, value, element=None):
     return [xs_convert_to_xml(ty, v, element) for v in value]
   return getattr(xs, ty)(value, _element=element)
 
-def xs_convert_from_xml(xml, is_seq=False):
+def xs_convert_from_xml(xml, is_seq=False, ty=None):
   """convert *xml* to Python.
 
   *xml* is the PyXB binding of an element with simple content.
@@ -212,20 +212,38 @@ def xs_convert_from_xml(xml, is_seq=False):
   whether the convertion should try to convert to a single value
   (`None`, if the list is empty; the first component if the list has
   a single value).
+
+  If *ty* is specified, it must be the name of a standard XML-schema type
+  and the values are converted to this type.
   """
   if xml is None: return
   if is_seq:
     # *xml* must be a sequence, too; crash, if this is not the case
-    return [xs_convert_from_xml(e) for e in xml]
+    return [xs_convert_from_xml(e, ty=ty) for e in xml]
   if is_plural(xml):
     if not xml: return
-    if len(xml) == 1: return xs_convert_from_xml(xml[0])
+    if len(xml) == 1: return xs_convert_from_xml(xml[0], ty=ty)
     raise TypeError("cannot convert list to single value")
+  if ty is not None:
+    xml = xs_convert_to_base_type(xml, ty)
   # most PyXB types are perfect Python values -- only a few types require conversion
   if isinstance(xml, xs.dateTime): return pyxb_to_datetime(xml)
   # some types may still be missing
   return xml
 
+
+def xs_convert_to_base_type(xml, ty):
+  """convert *xml* to XML-Schema base type *ty*.
+
+  *xml* is the PyXB binding of an element with simple or `any` content.
+  """
+  tc = getattr(xs, ty) # fail for an unknown type
+  return tc.Factory(
+    # fail, if *xml* lacks both `xsdLiteral` (no simple type) and `content`
+    #  (not `any`).
+    *((xml.xsdLiteral(),) if hasattr(xml, "xsdLiteral") else xml.content()),
+    _from_xml=True
+    )
 
 
 ##############################################################################
